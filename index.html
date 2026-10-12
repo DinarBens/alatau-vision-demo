@@ -1,3 +1,12 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0D1416" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
+<meta name="robots" content="noindex, nofollow">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}html,body{overscroll-behavior:none}</style>
 <title>Alatau Vision 3D</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -64,8 +73,8 @@ header{display:flex;flex-wrap:wrap;align-items:center;gap:10px 20px;padding:10px
 main{display:grid;grid-template-columns:minmax(0,1fr) 370px;min-height:0}
 .stage{position:relative;min-height:0;overflow:hidden;background:var(--bg)}
 .stage canvas{display:block}
-#labels{position:absolute;inset:0;pointer-events:none}
-.ov{position:absolute;display:flex;gap:8px;flex-wrap:wrap;z-index:2}
+#labels{position:absolute;inset:0;pointer-events:none;z-index:1}
+.ov{position:absolute;display:flex;gap:8px;flex-wrap:wrap;z-index:3}
 .ov.tl{top:12px;left:12px;right:12px;justify-content:space-between;pointer-events:none}
 .ov.tl>*{pointer-events:auto}
 .ov.bl{left:12px;bottom:12px}
@@ -137,28 +146,66 @@ ol.feed{list-style:none;margin:0;padding:0;display:grid;gap:6px}
 .ev time{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
 .note{font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:12px;margin-top:auto}
 
+button{touch-action:manipulation}
+.sheet-handle,.search-btn{display:none}
+
+/* Phone: 3D fills the screen, camera + log live in a bottom sheet */
 @media (max-width:860px){
-  .app{height:auto;min-height:100%}
-  main{grid-template-columns:1fr}
-  .stage{height:62vh;min-height:380px}
-  aside{border-left:0;border-top:1px solid var(--line);overflow:visible}
-  .stats{margin-left:0}
-  .search{flex:1 1 100%}
+  .app{overflow:hidden}
+  header{padding:8px 16px;gap:8px 14px;flex-wrap:nowrap}
+  #camCard .eyebrow{display:none}
+  .brand b{font-size:15px}
+  .brand small{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .brand>div{min-width:0}
+  .stats{gap:4px 12px;flex-wrap:nowrap}
+  .stat.opt{display:none}
+  .stat span{font-size:11px}
+  main{display:block;position:relative;min-height:0;overflow:hidden}
+  .stage{position:absolute;inset:0;height:auto}
+  .ov.tl{top:10px;left:10px;right:10px;flex-wrap:nowrap}
+  .seg{flex:1 1 auto;min-width:0;overflow-x:auto;scrollbar-width:none}
+  .seg::-webkit-scrollbar{display:none}
+  .seg button{padding:7px 9px;flex:1 0 auto}
+  .search-btn{display:grid;place-items:center;width:40px;flex:none;border:1px solid var(--line);background:var(--panel);border-radius:10px}
+  .search-btn svg{width:17px;height:17px}
+  .search{display:none;position:absolute;top:48px;left:0;right:0;flex:none}
+  .ov.tl.searching .search{display:flex}
+  .ov.bl.legend{display:none}
+  .ov.br{bottom:calc(var(--peek,0px) + 12px);right:10px;transition:bottom .3s}
+  .btn{padding:8px 12px}
+  .toast{top:60px}
+  .rl{font-size:10px}
+  .stage:not([data-mode="f1"]):not([data-mode="f2"]) .rl{display:none}
+  .ct:not(.sel):not(.hasev){display:none}
+
+  aside{position:absolute;left:0;right:0;bottom:0;z-index:4;max-height:84%;border-left:0;border-top:1px solid var(--line);
+    border-radius:16px 16px 0 0;box-shadow:0 -8px 30px rgb(0 0 0 / .18);padding:0 16px 16px;gap:16px;
+    transform:translateY(calc(100% - var(--peek,170px)));transition:transform .3s cubic-bezier(.2,.8,.2,1);overflow:hidden}
+  aside.open{transform:none;overflow:auto;overscroll-behavior:contain}
+  .sheet-handle{display:grid;place-items:center;position:sticky;top:0;z-index:2;background:var(--panel);border:0;width:calc(100% + 32px);margin:0 -16px;padding:10px 0 8px;touch-action:none}
+  .sheet-handle span{width:40px;height:5px;border-radius:99px;background:var(--line)}
+  #camCard{display:flex;flex-direction:column}
+  #camCard .cam-head{order:0} #camCard .active-ev{order:1} #camCard .live{order:2} #camCard dl.meta{order:3} #camCard .chips{order:4}
+  .cam-head h2{font-size:18px}
+  .note{margin-top:0}
 }
-@media (prefers-reduced-motion:reduce){ .toast{transition:none} }
+@media (prefers-reduced-motion:reduce){ .toast,aside,.ov.br{transition:none} }
 </style>
+</head>
+<body>
+
 
 <div class="app">
   <header>
     <div class="brand">
       <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" aria-hidden="true"><path d="M2 25 11 11l5 7 4-5 10 12z"/><circle cx="22" cy="7" r="2.6" fill="currentColor" stroke="none"/></svg>
-      <div><b>Alatau Vision</b><small>СОШ №27 · Шымкент · демо-модель</small></div>
+      <div><b>Alatau Vision</b><small>СОШ №27 · Шымкент · демо</small></div>
     </div>
     <div class="stats">
-      <div class="stat"><span>Камеры онлайн</span><b id="stCams">—</b></div>
+      <div class="stat opt"><span>Камеры онлайн</span><b id="stCams">—</b></div>
       <div class="stat"><span>Открытых событий</span><b id="stOpen" class="alert">—</b></div>
-      <div class="stat"><span>Событий сегодня</span><b id="stToday">—</b></div>
-      <div class="stat"><b id="clock" class="mono">--:--:--</b></div>
+      <div class="stat opt"><span>Событий сегодня</span><b id="stToday">—</b></div>
+      <div class="stat opt"><b id="clock" class="mono">--:--:--</b></div>
     </div>
   </header>
   <main>
@@ -171,6 +218,7 @@ ol.feed{list-style:none;margin:0;padding:0;display:grid;gap:6px}
           <button data-mode="f2" aria-pressed="false">2 этаж</button>
           <button data-mode="out" aria-pressed="false">Снаружи</button>
         </div>
+        <button class="search-btn" id="searchBtn" type="button" aria-label="Поиск"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="7" cy="7" r="5"/><path d="m11 11 3.5 3.5"/></svg></button>
         <label class="search"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="7" cy="7" r="5"/><path d="m11 11 3.5 3.5"/></svg>
           <input id="q" list="qlist" placeholder="Кабинет, зона или CAM-…" autocomplete="off" aria-label="Поиск"></label>
         <datalist id="qlist"></datalist>
@@ -187,7 +235,8 @@ ol.feed{list-style:none;margin:0;padding:0;display:grid;gap:6px}
         <button class="btn primary" id="evBtn" type="button">Событие сейчас</button>
       </div>
     </div>
-    <aside>
+    <aside id="sheet">
+      <button class="sheet-handle" id="handle" type="button" aria-label="Развернуть панель"><span></span></button>
       <section class="sev-info" id="camCard">
         <div class="cam-head">
           <div><div class="eyebrow">Камера</div><h2 id="camId">CAM-—</h2><p id="camName"></p></div>
@@ -290,8 +339,10 @@ const camRect = c => c.rect || roomById[c.zone];
 
 /* ---------- renderer & scene ---------- */
 const stage = $('#stage');
+const compactMQ = matchMedia('(max-width: 860px)');
+const compact = () => compactMQ.matches;
 const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setPixelRatio(Math.min(devicePixelRatio, compact() ? 1.5 : 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.localClippingEnabled = true;
@@ -310,7 +361,7 @@ controls.enableDamping = true; controls.maxPolarAngle = 1.46; controls.minDistan
 const hemi = new THREE.HemisphereLight(0xffffff, 0x8a8f86, 1.5); scene.add(hemi);
 const sun = new THREE.DirectionalLight(0xffffff, 2.1);
 sun.position.set(-40, 70, -50); sun.castShadow = true;
-sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.mapSize.setScalar(compact() ? 1024 : 2048);
 Object.assign(sun.shadow.camera, { left: -80, right: 80, top: 80, bottom: -80, near: 10, far: 220 });
 sun.shadow.bias = -0.0004;
 scene.add(sun);
@@ -493,6 +544,7 @@ function refreshCamStyles() {
     c.fanMat.color.set(c.on ? fan : off);
     c.fanMat.opacity = !c.on ? 0.1 : sel ? 0.4 : 0.15;
     c.tag.classList.toggle('sel', sel);
+    c.tag.classList.toggle('hasev', state.events.some(e => e.cam === c.id && e.st !== 'closed'));
     c.body.scale.setScalar(sel ? 1.5 : 1);
   }
   for (const ev of state.events) if (ev.marker) ev.marker.userData.mats.forEach(m => m.color.set(cssv('--s-' + KIND[ev.kind].sev)));
@@ -561,14 +613,14 @@ function addEvent(kind, camId, minsAgo = 0, st = 'new', silent = false) {
   const ev = { id: ++state.seq, kind, cam: camId, t: new Date(Date.now() - minsAgo * 60000), pos: eventPoint(c), conf: Math.round(rnd(81, 97)), st };
   if (st !== 'closed') ev.marker = makeMarker(ev);
   state.events.unshift(ev);
-  renderFeed(); renderCard(); renderStats();
+  renderFeed(); renderCard(); renderStats(); refreshCamStyles();
   if (!silent) showToast(ev);
   return ev;
 }
 function setStatus(ev, st) {
   ev.st = st;
   if (st === 'closed' && ev.marker) { ev.marker.parent.remove(ev.marker); ev.marker.traverse(o => o.element && o.element.remove()); ev.marker = null; }
-  renderFeed(); renderCard(); renderStats();
+  renderFeed(); renderCard(); renderStats(); refreshCamStyles();
 }
 function randomEvent() {
   const c = pick(CAMS.filter(c => c.on));
@@ -619,6 +671,22 @@ function renderCard() {
     $('#actAcc').onclick = () => setStatus(ev, 'acc');
     $('#actClose').onclick = () => setStatus(ev, 'closed');
   }
+  updatePeek();
+}
+/* bottom sheet (phones) */
+const sheet = $('#sheet'), mainEl = document.querySelector('main');
+let peek = 0;
+function updatePeek() {
+  if (!compact()) { if (peek) { peek = 0; mainEl.style.removeProperty('--peek'); sheet.style.removeProperty('--peek'); updateView(); } return; }
+  const top = sheet.getBoundingClientRect().top, act = $('#actEv');
+  const last = act.hidden ? document.querySelector('.cam-head') : act;
+  const p = Math.round(last.getBoundingClientRect().bottom - top + 14);
+  if (p > 40 && p !== peek) { peek = p; sheet.style.setProperty('--peek', p + 'px'); mainEl.style.setProperty('--peek', p + 'px'); updateView(); }
+}
+function setSheet(open) {
+  sheet.classList.toggle('open', open);
+  $('#handle').setAttribute('aria-label', open ? 'Свернуть панель' : 'Развернуть панель');
+  if (!open) sheet.scrollTop = 0;
 }
 let toastTimer;
 function showToast(ev) {
@@ -635,22 +703,28 @@ function flyTo(pos, tgt, dur = 0.9) {
   if (reduce) dur = 0.01;
   fly = { p0: camera.position.clone(), t0: controls.target.clone(), p1: pos, t1: tgt, k: 0, dur };
 }
+// portrait screens need the camera further back to fit the same width
+const fitK = () => { const a = stage.clientWidth / Math.max(1, stage.clientHeight - peek); return a < 1.2 ? Math.min(3, 1.2 / a) : 1; };
 function flyToPoint(p, dist = 24) {
   const dir = camera.position.clone().sub(controls.target).normalize();
   if (dir.y < 0.55) { dir.y = 0.55; dir.normalize(); }
-  flyTo(p.clone().add(dir.multiplyScalar(dist)), p.clone());
+  flyTo(p.clone().add(dir.multiplyScalar(dist * fitK())), p.clone());
 }
 const PRESET = {
   all: [[58, 60, -72], [8, 3, 0]], f1: [[34, 50, -46], [8, 0, 0]], f2: [[34, 54, -46], [8, 3.6, 0]], out: [[70, 38, -82], [8, 3, -6]],
 };
 function setMode(m, move = true) {
-  state.mode = m;
+  state.mode = m; stage.dataset.mode = m;
   document.querySelectorAll('[data-mode]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === m)));
   f1.visible = m === 'all' || m === 'f1';
   f2.visible = m === 'all' || m === 'f2';
   shell.visible = m === 'out';
   f2.userData.ty = m === 'all' ? FH + 4.5 : FH;
-  if (move) flyTo(new THREE.Vector3(...PRESET[m][0]), new THREE.Vector3(...PRESET[m][1]));
+  if (move) {
+    const tgt = new THREE.Vector3(...PRESET[m][1]);
+    const pos = new THREE.Vector3(...PRESET[m][0]).sub(tgt).multiplyScalar(fitK()).add(tgt);
+    flyTo(pos, tgt);
+  }
 }
 function ensureFloor(f) {
   if (f === 1 && !f1.visible) setMode('f1', false);
@@ -660,6 +734,7 @@ function selectCam(id, move = false) {
   state.sel = id; const c = camById[id];
   ensureFloor(c.f); refreshCamStyles(); renderCard(); sizeLive();
   if (move) {
+    if (compact()) setSheet(false);
     const p = new THREE.Vector3(); c.body.getWorldPosition(p);
     p.y -= c.mountY; p.x += Math.cos(c.a) * c.r * 0.3; p.z += Math.sin(c.a) * c.r * 0.3;
     flyToPoint(p, c.f === 0 ? 34 : 24);
@@ -667,6 +742,7 @@ function selectCam(id, move = false) {
 }
 function openEvent(ev) {
   selectCam(ev.cam);
+  if (compact()) setSheet(false);
   const c = camById[ev.cam], p = new THREE.Vector3(ev.pos[0], 0, ev.pos[1]);
   p.y = c.f === 0 ? 0 : (c.f === 2 ? (f2.userData.ty ?? f2.position.y) : 0);
   flyToPoint(p, 20);
@@ -715,12 +791,37 @@ $('#evBtn').addEventListener('click', () => { const ev = randomEvent(); openEven
 }
 
 /* ---------- resize & theme ---------- */
+// on phones the sheet covers the bottom: shift the projection so the model centres in the visible part
+function updateView() {
+  const w = stage.clientWidth, h = stage.clientHeight; if (!w || !h) return;
+  camera.fov = compact() ? 50 : 42;
+  if (peek) { camera.aspect = w / (h + peek); camera.setViewOffset(w, h + peek, 0, peek, w, h); }
+  else { camera.clearViewOffset(); camera.aspect = w / h; }
+  camera.updateProjectionMatrix();
+}
 function resize() {
   const w = stage.clientWidth, h = stage.clientHeight;
   renderer.setSize(w, h); labelR.setSize(w, h);
-  camera.aspect = w / h; camera.updateProjectionMatrix(); sizeLive();
+  updatePeek(); updateView(); sizeLive();
 }
 new ResizeObserver(resize).observe(stage);
+compactMQ.addEventListener('change', () => { setSheet(false); updatePeek(); });
+{
+  const hd = $('#handle'); let y0 = null, moved = false;
+  hd.addEventListener('pointerdown', e => { y0 = e.clientY; moved = false; hd.setPointerCapture(e.pointerId); });
+  hd.addEventListener('pointermove', e => { if (y0 !== null && Math.abs(e.clientY - y0) > 25) moved = true; });
+  hd.addEventListener('pointerup', e => {
+    if (y0 === null) return; const dy = e.clientY - y0; y0 = null;
+    if (!moved) setSheet(!sheet.classList.contains('open')); else setSheet(dy < 0);
+  });
+  hd.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSheet(!sheet.classList.contains('open')); } });
+  $('#feed').addEventListener('focusin', () => compact() && setSheet(true));
+  $('#searchBtn').addEventListener('click', () => {
+    const ov = $('.ov.tl'); ov.classList.toggle('searching');
+    if (ov.classList.contains('searching')) $('#q').focus();
+  });
+  $('#q').addEventListener('change', () => $('.ov.tl').classList.remove('searching'));
+}
 new ResizeObserver(sizeLive).observe(liveCanvas.parentElement);
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
 new MutationObserver(applyTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
@@ -766,7 +867,7 @@ renderer.setAnimationLoop(() => {
   controls.update();
   renderer.render(scene, camera); labelR.render(scene, camera);
   const c = camById[state.sel];
-  if (c && c.on) {
+  if (c && c.on && !(compact() && !sheet.classList.contains('open'))) {
     c.body.getWorldPosition(tmpP);
     tmpL.set(c.p[0] + Math.cos(c.a) * c.r * 0.55, tmpP.y - c.mountY + 0.6, c.p[1] + Math.sin(c.a) * c.r * 0.55);
     liveCam.position.copy(tmpP); liveCam.lookAt(tmpL);
@@ -780,3 +881,6 @@ renderer.setAnimationLoop(() => {
 });
 openEvent(first);
 </script>
+
+</body>
+</html>
